@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"image"
 	"image/color"
+	"image/draw"
 	"strconv"
 	"unicode"
 )
@@ -33,7 +34,7 @@ type commonElement struct {
 
 	elementID string
 
-	canvas   image.Image
+	canvas   draw.Image
 	upToDate bool
 }
 
