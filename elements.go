@@ -75,6 +75,8 @@ func (e *commonElement) SetAttribute(attr string, val string) {
 	case "y":
 		e.yOffset = parseUnit(val)
 	}
+
+	e.upToDate = false
 }
 
 func (e *commonElement) ColorModel() color.Model {
