@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"image"
 	"image/color"
+	"image/draw"
 	"strconv"
 	"unicode"
 )
@@ -15,6 +16,8 @@ type Element interface {
 	ParseAttributes(token *xml.StartElement)
 	// Bounds returns the elements size as an image.Rectangle.
 	Bounds() image.Rectangle
+	// SetAttribute sets the named attribute to its given value.
+	SetAttribute(name string, value string)
 }
 
 type commonElement struct {
@@ -33,7 +36,7 @@ type commonElement struct {
 
 	elementID string
 
-	canvas   image.Image
+	canvas   draw.Image
 	upToDate bool
 }
 
@@ -49,6 +52,31 @@ func (e *commonElement) Bounds() image.Rectangle {
 	return image.Rect(e.xOffset, e.yOffset, e.width+e.xOffset, e.height+e.yOffset)
 }
 
+func (e *commonElement) SetAttribute(attr string, val string) {
+	switch attr {
+	case "stroke":
+		e.strokeColor = colorFromPaintToken(val)
+	case "stroke-width":
+		e.strokeWidth = parseUnit(val)
+	case "stroke-opacity":
+		e.strokeOpacity = color.Alpha16{uint16(0xffff * parseFloatUnit(val))}
+	case "fill":
+		e.fillColor = colorFromPaintToken(val)
+	case "fill-opacity":
+		e.fillOpacity = color.Alpha16{uint16(0xffff * parseFloatUnit(val))}
+	case "width":
+		e.width = parseUnit(val)
+	case "height":
+		e.height = parseUnit(val)
+	case "id":
+		e.elementID = val
+	case "x":
+		e.xOffset = parseUnit(val)
+	case "y":
+		e.yOffset = parseUnit(val)
+	}
+}
+
 func (e *commonElement) ColorModel() color.Model {
 	return color.RGBAModel
 }
@@ -62,30 +90,8 @@ func (e *commonElement) parseCommonAttributes(start *xml.StartElement) {
 	e.fillColor = color.Transparent
 
 	for _, attr := range start.Attr {
-		switch attr.Name.Local {
-		case "stroke":
-			e.strokeColor = colorFromPaintToken(attr.Value)
-		case "stroke-width":
-			e.strokeWidth = parseUnit(attr.Value)
-		case "stroke-opacity":
-			e.strokeOpacity = color.Alpha16{uint16(0xffff * parseFloatUnit(attr.Value))}
-		case "fill":
-			e.fillColor = colorFromPaintToken(attr.Value)
-		case "fill-opacity":
-			e.fillOpacity = color.Alpha16{uint16(0xffff * parseFloatUnit(attr.Value))}
-		case "width":
-			e.width = parseUnit(attr.Value)
-		case "height":
-			e.height = parseUnit(attr.Value)
-		case "id":
-			e.elementID = attr.Value
-		case "x":
-			e.xOffset = parseUnit(attr.Value)
-		case "y":
-			e.yOffset = parseUnit(attr.Value)
-		}
+		e.SetAttribute(attr.Name.Local, attr.Value)
 	}
-
 }
 
 // utility functions
