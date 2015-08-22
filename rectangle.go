@@ -13,6 +13,14 @@ type Rectangle struct {
 	rY float64
 }
 
+func NewRectangle() *Rectangle {
+	r := &Rectangle{}
+	r.strokeColor = image.Transparent
+	r.fillColor = image.Black
+
+	return r
+}
+
 func (r *Rectangle) ParseAttributes(start *xml.StartElement) {
 	r.parseCommonAttributes(start)
 

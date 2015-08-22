@@ -88,9 +88,6 @@ func (e *commonElement) newRGBA() *image.RGBA {
 }
 
 func (e *commonElement) parseCommonAttributes(start *xml.StartElement) {
-	e.strokeColor = color.Transparent
-	e.fillColor = color.Transparent
-
 	for _, attr := range start.Attr {
 		e.SetAttribute(attr.Name.Local, attr.Value)
 	}
