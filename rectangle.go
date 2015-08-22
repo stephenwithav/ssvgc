@@ -39,6 +39,7 @@ func (r *Rectangle) Draw() image.Image {
 	default:
 		offsetBy := r.strokeWidth >> 1
 		strokeBounds := fillBounds.Inset(-offsetBy)
+		fillBounds = fillBounds.Inset(offsetBy + (r.strokeWidth & 1))
 		r.canvas = image.NewRGBA(strokeBounds)
 		draw.Draw(r.canvas, strokeBounds, &image.Uniform{r.strokeColor}, image.ZP, draw.Over)
 	}

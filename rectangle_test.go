@@ -30,6 +30,14 @@ func TestRectangleDrawing(t *testing.T) {
 			"width":        "400",
 			"height":       "400",
 		},
+		{
+			"name":         "redinsetwithblue2",
+			"fill":         "blue",
+			"stroke":       "red",
+			"stroke-width": "1",
+			"width":        "400",
+			"height":       "400",
+		},
 	}
 
 	for _, tt := range tests {
