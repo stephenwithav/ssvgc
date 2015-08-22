@@ -30,6 +30,16 @@ func TestSVGDrawing(t *testing.T) {
 			"x":      "50",
 			"y":      "50",
 		},
+		{
+			"name":         "solidredstrokedgreen",
+			"fill":         "red",
+			"width":        "100",
+			"height":       "100",
+			"x":            "50",
+			"y":            "50",
+			"stroke":       "green",
+			"stroke-width": "15",
+		},
 	}
 
 	var tests = []StringMap{
@@ -41,8 +51,15 @@ func TestSVGDrawing(t *testing.T) {
 			"fill":       "none",
 		},
 		{
-			"name":       "solidbluesvg",
+			"name":       "bluewithredsvg",
 			"rectangles": "solidblue,solidred",
+			"width":      "200",
+			"height":     "200",
+			"fill":       "none",
+		},
+		{
+			"name":       "bluewithredstrokedgreensvg",
+			"rectangles": "solidblue,solidredstrokedgreen",
 			"width":      "200",
 			"height":     "200",
 			"fill":       "none",
