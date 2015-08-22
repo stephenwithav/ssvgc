@@ -1,7 +1,6 @@
 package ssvgc_test
 
 import (
-	"encoding/xml"
 	"testing"
 
 	"github.com/llgcode/draw2d/draw2dimg"
@@ -41,8 +40,7 @@ func TestRectangleDrawing(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		r := &ssvgc.Rectangle{}
-		r.ParseAttributes(&xml.StartElement{})
+		r := ssvgc.NewRectangle()
 		for name, value := range tt {
 			r.SetAttribute(name, value)
 		}
