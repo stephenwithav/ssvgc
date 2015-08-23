@@ -59,7 +59,7 @@ func (t *Text) Draw() image.Image {
 	}
 	t.font = t.loadFont(t.ttfFont)
 
-	width, size, _ := t.GetStringSize(t.textValue)
+	width, _ := t.GetStringSize(t.textValue)
 	t.SetAttribute("width", strconv.Itoa(width))
 	t.SetAttribute("height", strconv.Itoa(t.getMaxHeight()))
 
@@ -73,18 +73,17 @@ func (t *Text) Draw() image.Image {
 	ctx.SetSrc(&image.Uniform{t.fillColor})
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
-	ctx.DrawString(t.textValue, freetype.Pt(bounds.Min.X, bounds.Min.Y+size))
+	ctx.DrawString(t.textValue, freetype.Pt(bounds.Min.X, bounds.Min.Y+int(t.fontSize)))
 
 	return img
 }
 
-func (t *Text) GetStringSize(s string) (int, int, int) {
+func (t *Text) GetStringSize(s string) (int, int) {
 	// Assumes 72 DPI
 	fupe := fixed.Int26_6(t.fontSize * 64.0)
 	width := fixed.I(0)
 
 	prev, hasPrev := t.font.Index(0), false
-	height := t.font.VMetric(fupe, prev).AdvanceHeight
 	for _, r := range s {
 		idx := t.font.Index(r)
 		if hasPrev {
@@ -96,7 +95,7 @@ func (t *Text) GetStringSize(s string) (int, int, int) {
 	}
 
 	fontBounds := t.font.Bounds(fupe)
-	return int(width >> 6), int(height >> 6), int((fontBounds.YMax - fontBounds.YMin) >> 6)
+	return int(width >> 6), int((fontBounds.YMax - fontBounds.YMin) >> 6)
 }
 
 func (t *Text) loadFont(path string) *truetype.Font {
@@ -118,7 +117,7 @@ func (t *Text) loadFont(path string) *truetype.Font {
 }
 
 func (t *Text) getMaxHeight() int {
-	w, s, h := t.GetStringSize("|")
+	w, h := t.GetStringSize("|")
 	bounds := image.Rect(0, 0, w, h)
 	img := image.NewRGBA(bounds)
 
@@ -128,7 +127,7 @@ func (t *Text) getMaxHeight() int {
 	ctx.SetSrc(&image.Uniform{t.fillColor})
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
-	ctx.DrawString("yj", freetype.Pt(0, s))
+	ctx.DrawString("|", freetype.Pt(0, int(t.fontSize)))
 
 	var i = len(img.Pix) - 1
 	for ; img.Pix[i] == 0; i-- {
