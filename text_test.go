@@ -33,6 +33,14 @@ func TestTextRendering(t *testing.T) {
 			"text-value": "joy to the world!",
 			"y":          "12",
 		},
+		{
+			"name":       "joytotheworld60red",
+			"fill":       "red",
+			"font-size":  "60",
+			"ttf-font":   "/tmp/DejaVuSans.ttf",
+			"text-value": "joy to the world!",
+			"y":          "60",
+		},
 	}
 
 	for _, tt := range tests {
