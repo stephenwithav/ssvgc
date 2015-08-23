@@ -51,6 +51,12 @@ func (t *Text) ParseAttributes(start *xml.StartElement) {
 	for _, attr := range start.Attr {
 		t.SetAttribute(attr.Name.Local, attr.Value)
 	}
+
+	// Go needs to know the top-left point to begin drawing at.
+	// Freetype and SVG need to know the bottom-left point
+	// to begin drawing at.  This adjustment gives everybody
+	// what they want.
+	t.yOffset -= int(t.fontSize)
 }
 
 func (t *Text) Draw() image.Image {
