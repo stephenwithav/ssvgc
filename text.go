@@ -59,9 +59,9 @@ func (t *Text) Draw() image.Image {
 	}
 	t.font = t.loadFont(t.ttfFont)
 
-	width, height := t.GetStringSize(t.textValue)
+	width, size, _ := t.GetStringSize(t.textValue)
 	t.SetAttribute("width", strconv.Itoa(width))
-	t.SetAttribute("height", strconv.Itoa(height))
+	t.SetAttribute("height", strconv.Itoa(t.getMaxHeight()))
 
 	bounds := t.Bounds()
 	img := image.NewRGBA(bounds)
@@ -73,9 +73,30 @@ func (t *Text) Draw() image.Image {
 	ctx.SetSrc(&image.Uniform{t.fillColor})
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
-	ctx.DrawString(t.textValue, freetype.Pt(bounds.Min.X, bounds.Max.Y))
+	ctx.DrawString(t.textValue, freetype.Pt(bounds.Min.X, bounds.Min.Y+size))
 
 	return img
+}
+
+func (t *Text) GetStringSize(s string) (int, int, int) {
+	// Assumes 72 DPI
+	fupe := fixed.Int26_6(t.fontSize * 64.0)
+	width := fixed.I(0)
+
+	prev, hasPrev := t.font.Index(0), false
+	height := t.font.VMetric(fupe, prev).AdvanceHeight
+	for _, r := range s {
+		idx := t.font.Index(r)
+		if hasPrev {
+			width += t.font.Kerning(fupe, prev, idx)
+		}
+
+		width += t.font.HMetric(fupe, idx).AdvanceWidth
+		prev, hasPrev = idx, true
+	}
+
+	fontBounds := t.font.Bounds(fupe)
+	return int(width >> 6), int(height >> 6), int((fontBounds.YMax - fontBounds.YMin) >> 6)
 }
 
 func (t *Text) loadFont(path string) *truetype.Font {
@@ -96,25 +117,23 @@ func (t *Text) loadFont(path string) *truetype.Font {
 	return font
 }
 
-func (t *Text) GetStringSize(s string) (int, int) {
-	// Assumes 72 DPI
-	fupe := fixed.Int26_6(t.fontSize * 64.0)
-	width, height := fixed.I(0), fixed.I(0)
+func (t *Text) getMaxHeight() int {
+	w, s, h := t.GetStringSize("|")
+	bounds := image.Rect(0, 0, w, h)
+	img := image.NewRGBA(bounds)
 
-	prev, hasPrev := t.font.Index(0), false
-	for _, r := range s {
-		idx := t.font.Index(r)
-		if hasPrev {
-			width += t.font.Kerning(fupe, prev, idx)
-		}
+	ctx := freetype.NewContext()
+	ctx.SetFont(t.font)
+	ctx.SetFontSize(t.fontSize)
+	ctx.SetSrc(&image.Uniform{t.fillColor})
+	ctx.SetDst(img)
+	ctx.SetClip(bounds)
+	ctx.DrawString("yj", freetype.Pt(0, s))
 
-		width += t.font.HMetric(fupe, idx).AdvanceWidth
-		h := t.font.VMetric(fupe, idx).AdvanceHeight
-		if h > height {
-			height = h
-		}
-		prev, hasPrev = idx, true
+	var i = len(img.Pix) - 1
+	for ; img.Pix[i] == 0; i-- {
+
 	}
 
-	return int(width >> 6), int(height >> 6)
+	return (i / img.Stride) + 1
 }
