@@ -2,6 +2,8 @@ package ssvgc
 
 import (
 	"encoding/xml"
+	"image"
+	"strconv"
 	"strings"
 
 	"github.com/disintegration/imaging"
@@ -50,4 +52,25 @@ func (i *Image) ParseAttributes(start *xml.StartElement) {
 	for _, attr := range start.Attr {
 		i.SetAttribute(attr.Name.Local, attr.Value)
 	}
+}
+
+func (i *Image) Draw() image.Image {
+	if i.canvas != nil && i.upToDate {
+		return i.canvas
+	}
+
+	m, err := imaging.Open(i.href)
+	if err != nil {
+		return image.Transparent
+	}
+
+	bounds := m.Bounds()
+	if i.width || i.height != 0 {
+		m = imaging.Resize(m, i.width, i.height, i.filter)
+		bounds = m.Bounds()
+	}
+	i.SetAttribute("width", strconv.Itoa(i.width))
+	i.SetAttribute("height", strconv.Itoa(i.height))
+
+	return m
 }
