@@ -71,10 +71,8 @@ func (i *Image) Draw() image.Image {
 		return image.Transparent
 	}
 
-	bounds := m.Bounds()
-	if i.width || i.height != 0 {
+	if i.width|i.height != 0 {
 		m = imaging.Resize(m, i.width, i.height, i.filter)
-		bounds = m.Bounds()
 	}
 	i.SetAttribute("width", strconv.Itoa(i.width))
 	i.SetAttribute("height", strconv.Itoa(i.height))
