@@ -34,6 +34,13 @@ var resampleFilters map[string]imaging.ResampleFilter = map[string]imaging.Resam
 	"cosine":            imaging.Cosine,
 }
 
+func NewImage() *Image {
+	i := &Image{}
+	i.filter = imaging.NearestNeighbor
+
+	return i
+}
+
 func (i *Image) SetAttribute(name string, value string) {
 	switch name {
 	case "href":
