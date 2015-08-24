@@ -3,6 +3,7 @@ package ssvgc
 import (
 	"encoding/xml"
 	"image"
+	"image/color"
 	"image/draw"
 )
 

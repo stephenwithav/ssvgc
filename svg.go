@@ -22,8 +22,7 @@ func (s *SVG) Draw() image.Image {
 
 	for _, element := range s.elements {
 		elementImage := element.Draw()
-		elementBounds := elementImage.Bounds()
-		draw.Draw(s.canvas, elementBounds, elementImage, elementBounds.Min, draw.Over)
+		draw.Draw(s.canvas, element.Bounds(), elementImage, elementImage.Bounds().Min, draw.Over)
 	}
 
 	return s.canvas
