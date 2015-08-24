@@ -42,7 +42,7 @@ func (r *Rectangle) Draw() image.Image {
 	fillBounds := r.Bounds()
 
 	switch r.strokeColor {
-	case image.Transparent:
+	case color.Transparent:
 		r.canvas = image.NewRGBA(fillBounds)
 	default:
 		offsetBy := r.strokeWidth >> 1
