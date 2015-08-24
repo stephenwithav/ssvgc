@@ -56,7 +56,7 @@ func (t *Text) Draw() image.Image {
 		return t.canvas
 	}
 
-	width, height, maxFont := 0, 0, 0.0
+	width, height, maxFont := fixed.I(0), 0, 0.0
 
 	for _, chunk := range t.chunks {
 		t.textContext = chunk.textContext
@@ -78,7 +78,7 @@ func (t *Text) Draw() image.Image {
 
 	t.textContext = t.chunks[0].textContext
 	glyphOffset := height - int(maxFont)
-	bounds := image.Rect(t.xOffset, t.yOffset-int(maxFont), t.xOffset+width, t.yOffset+glyphOffset)
+	bounds := image.Rect(t.xOffset, t.yOffset-int(maxFont), t.xOffset+int(width>>6), t.yOffset+glyphOffset)
 
 	img := image.NewRGBA(bounds)
 	draw.Draw(img, bounds, image.Transparent, image.ZP, draw.Src)
@@ -99,7 +99,7 @@ func (t *Text) Draw() image.Image {
 	return img
 }
 
-func (t *Text) GetStringSize(s string) (int, int) {
+func (t *Text) GetStringSize(s string) (fixed.Int26_6, fixed.Int26_6) {
 	// Assumes 72 DPI
 	fupe := fixed.Int26_6(t.fontSize * 64.0)
 	width := fixed.I(0)
@@ -116,7 +116,7 @@ func (t *Text) GetStringSize(s string) (int, int) {
 	}
 
 	fontBounds := t.font.Bounds(fupe)
-	return int(width >> 6), int((fontBounds.YMax - fontBounds.YMin) >> 6)
+	return width, (fontBounds.YMax - fontBounds.YMin)
 }
 
 func (t *Text) loadFont(path string) *truetype.Font {
@@ -139,7 +139,7 @@ func (t *Text) loadFont(path string) *truetype.Font {
 
 func (t *Text) getMaxHeight() int {
 	w, h := t.GetStringSize("|")
-	bounds := image.Rect(0, 0, w, h)
+	bounds := image.Rect(0, 0, int(w>>6), int(h>>6))
 	img := image.NewRGBA(bounds)
 
 	ctx := freetype.NewContext()
