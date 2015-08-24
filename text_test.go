@@ -1,6 +1,7 @@
 package ssvgc_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/llgcode/draw2d/draw2dimg"
@@ -10,45 +11,43 @@ import (
 func TestTextRendering(t *testing.T) {
 	var tests = []StringMap{
 		{
-			"name":       "helloworld30red",
-			"fill":       "red",
-			"font-size":  "30",
-			"ttf-font":   "/tmp/DejaVuSans.ttf",
-			"text-value": "Hello world!",
-			"y":          "12",
+			"name": "textredbanana",
+			"text-value": `<svg width="200" height="200" fill="white">
+<text ttf-font="/tmp/DejaVuSans.ttf" x="15" y="30">You are
+    <tspan fill="red">not</tspan>
+    a banana
+</text>
+</svg>`,
 		},
 		{
-			"name":       "helloworld18red",
-			"fill":       "red",
-			"font-size":  "18",
-			"ttf-font":   "/tmp/DejaVuSans.ttf",
-			"text-value": "Hello world!",
-			"y":          "18",
+			"name": "textbananashiftedright",
+			"text-value": `<svg width="200" height="200" fill="white">
+<text ttf-font="/tmp/DejaVuSans.ttf" x="45" y="30">You are
+    <tspan>not</tspan>
+    a banana
+</text>
+</svg>`,
 		},
 		{
-			"name":       "joytotheworld12red",
-			"fill":       "red",
-			"font-size":  "12",
-			"ttf-font":   "/tmp/DejaVuSans.ttf",
-			"text-value": "joy to the world!",
-			"y":          "12",
-		},
-		{
-			"name":       "joytotheworld60red",
-			"fill":       "red",
-			"font-size":  "60",
-			"ttf-font":   "/tmp/DejaVuSans.ttf",
-			"text-value": "joy to the world!",
-			"y":          "60",
+			"name": "textbananashifteddown",
+			"text-value": `<svg width="200" height="200" fill="white">
+<text ttf-font="/tmp/DejaVuSans.ttf" font-size="18" x="1" y="70">You are
+    <tspan>not</tspan>
+    a banana
+</text>
+</svg>`,
 		},
 	}
 
 	for _, tt := range tests {
-		txt := ssvgc.NewText()
-		for name, value := range tt {
-			txt.SetAttribute(name, value)
+		r := strings.NewReader(tt["text-value"])
+		p := ssvgc.NewParser(r)
+		svg, err := p.ParseSVG()
+		if err != nil {
+			t.Errorf("ParseSVG() failed => %s", err)
+			continue
 		}
 
-		draw2dimg.SaveToPngFile("output/"+tt["name"]+".png", txt.Draw())
+		draw2dimg.SaveToPngFile("output/"+tt["name"]+".png", svg.Draw())
 	}
 }
