@@ -139,3 +139,22 @@ const (
 	SVG_TSPAN_ELEMENT
 	SVG_UNKNOWN_ELEMENT
 )
+
+type contextStack struct {
+	contexts []textContext
+}
+
+func (c *contextStack) Push(tc textContext) {
+	c.contexts = append(c.contexts, tc)
+}
+
+func (c *contextStack) Pop() textContext {
+	i := len(c.contexts) - 1
+	ctx := c.contexts[i]
+	c.contexts = c.contexts[0:i]
+	return ctx
+}
+
+func (c contextStack) Top() textContext {
+	return c.contexts[len(c.contexts)-1]
+}
