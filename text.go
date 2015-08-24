@@ -35,8 +35,6 @@ func (t *Text) SetAttribute(name, value string) {
 	case "ttf-font":
 		t.ttfFont = value
 		t.font = nil
-	case "text-value":
-		t.textValue = value
 	default:
 		t.commonElement.SetAttribute(name, value)
 	}
@@ -158,4 +156,19 @@ func (t *Text) getMaxHeight() int {
 	}
 
 	return (i / img.Stride) + 1
+}
+
+type textContext struct {
+	commonElement
+
+	fontSize float64
+	ttfFont  string
+
+	font *truetype.Font
+}
+
+type textChunk struct {
+	textContext
+	startPos int
+	endPos   int
 }
