@@ -1,11 +1,11 @@
 package ssvgc
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/xml"
 	"image"
 	"io"
-	"strings"
 )
 
 type Entity uint8
@@ -56,35 +56,53 @@ func (p *Parser) dispatchStartElement(s *SVG, tagname string, tok *xml.StartElem
 		r.ParseAttributes(tok)
 		s.AddElement(r)
 	case SVG_TEXT_ELEMENT:
-		t := NewText()
-		t.ParseAttributes(tok)
-		t.SetAttribute("text-value", p.consumeText())
-		s.AddElement(t)
+		s.AddElement(p.consumeText(tok))
 	case SVG_TSPAN_ELEMENT:
 	case SVG_UNKNOWN_ELEMENT:
 	}
 }
 
-func (p *Parser) consumeText() string {
+func (p *Parser) consumeText(tok *xml.StartElement) *Text {
+	t := NewText()
+	t.ParseAttributes(tok)
 	buf := new(bytes.Buffer)
+	cs := &contextStack{}
+	cs.Push(t.textContext)
 
-	tok, err := p.d.Token()
-	if err != nil {
-		return ""
-	}
-
-	for ; err == nil; tok, err = p.d.Token() {
+	hasPrev := false
+	for tok, err := p.d.Token(); err == nil; tok, err = p.d.Token() {
 		switch el := tok.(type) {
 		case xml.CharData:
-			buf.Write(el)
+			startPos := buf.Len()
+
+			s := bufio.NewScanner(bytes.NewReader(el))
+			s.Split(bufio.ScanWords)
+			for s.Scan() {
+				switch hasPrev {
+				case true:
+					buf.WriteString(" " + s.Text())
+				default:
+					buf.WriteString(s.Text())
+
+				}
+				hasPrev = true
+			}
+
+			endPos := buf.Len()
+			t.chunks = append(t.chunks, &textChunk{cs.Top(), startPos, endPos})
+		case xml.StartElement:
+			t.ParseAttributes(&el)
+			cs.Push(t.textContext)
 		case xml.EndElement:
+			cs.Pop()
 			if el.Name.Local == "text" {
-				return buf.String()
+				t.buf = buf.Bytes()
+				return t
 			}
 		}
 	}
 
-	return strings.TrimSpace(buf.String())
+	return t
 }
 
 var svgType map[string]Entity
@@ -121,3 +139,22 @@ const (
 	SVG_TSPAN_ELEMENT
 	SVG_UNKNOWN_ELEMENT
 )
+
+type contextStack struct {
+	contexts []textContext
+}
+
+func (c *contextStack) Push(tc textContext) {
+	c.contexts = append(c.contexts, tc)
+}
+
+func (c *contextStack) Pop() textContext {
+	i := len(c.contexts) - 1
+	ctx := c.contexts[i]
+	c.contexts = c.contexts[0:i]
+	return ctx
+}
+
+func (c contextStack) Top() textContext {
+	return c.contexts[len(c.contexts)-1]
+}
