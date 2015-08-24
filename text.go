@@ -14,13 +14,9 @@ import (
 )
 
 type Text struct {
-	commonElement
-
-	fontSize  float64
-	ttfFont   string
-	textValue string
-
-	font *truetype.Font
+	textContext
+	chunks []*textChunk
+	buf    []byte
 }
 
 func NewText() *Text {
@@ -51,35 +47,56 @@ func (t *Text) ParseAttributes(start *xml.StartElement) {
 	for _, attr := range start.Attr {
 		t.SetAttribute(attr.Name.Local, attr.Value)
 	}
-
-	// Go needs to know the top-left point to begin drawing at.
-	// Freetype and SVG need to know the bottom-left point
-	// to begin drawing at.  This adjustment gives everybody
-	// what they want.
-	t.yOffset -= int(t.fontSize)
 }
 
 func (t *Text) Draw() image.Image {
+	if len(t.chunks) == 0 {
+		return image.Transparent
+	}
+
 	if t.canvas != nil && t.upToDate {
 		return t.canvas
 	}
-	t.font = t.loadFont(t.ttfFont)
 
-	width, _ := t.GetStringSize(t.textValue)
-	t.SetAttribute("width", strconv.Itoa(width))
-	t.SetAttribute("height", strconv.Itoa(t.getMaxHeight()))
+	width, height, maxFont := 0, 0, 0.0
 
-	bounds := t.Bounds()
+	for _, chunk := range t.chunks {
+		t.textContext = chunk.textContext
+		t.font = t.loadFont(t.ttfFont)
+
+		s := string(t.buf[chunk.startPos:chunk.endPos])
+		cWidth, _ := t.GetStringSize(s)
+		width += cWidth
+
+		cHeight := t.getMaxHeight()
+		if cHeight > height {
+			height = cHeight
+		}
+
+		if t.fontSize > maxFont {
+			maxFont = t.fontSize
+		}
+	}
+
+	t.textContext = t.chunks[0].textContext
+	glyphOffset := height - int(maxFont)
+	bounds := image.Rect(t.xOffset, t.yOffset-int(maxFont), t.xOffset+width, t.yOffset+glyphOffset)
+
 	img := image.NewRGBA(bounds)
 	draw.Draw(img, bounds, image.Transparent, image.ZP, draw.Src)
 
 	ctx := freetype.NewContext()
-	ctx.SetFont(t.font)
-	ctx.SetFontSize(t.fontSize)
-	ctx.SetSrc(&image.Uniform{t.fillColor})
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
-	ctx.DrawString(t.textValue, freetype.Pt(bounds.Min.X, bounds.Min.Y+int(t.fontSize)))
+
+	pt := freetype.Pt(bounds.Min.X, bounds.Min.Y+int(t.fontSize))
+	t.font = t.loadFont(t.ttfFont)
+	for _, chunk := range t.chunks {
+		ctx.SetFont(t.font)
+		ctx.SetFontSize(chunk.fontSize)
+		ctx.SetSrc(&image.Uniform{chunk.fillColor})
+		pt, _ = ctx.DrawString(string(t.buf[chunk.startPos:chunk.endPos]), pt)
+	}
 
 	return img
 }
