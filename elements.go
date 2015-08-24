@@ -93,6 +93,11 @@ func (e *commonElement) parseCommonAttributes(start *xml.StartElement) {
 	}
 }
 
+func (e *commonElement) setDimensions(w, h int) {
+	e.width = w
+	e.height = h
+}
+
 // utility functions
 
 func parseFloatUnit(s string) float64 {
