@@ -47,6 +47,9 @@ func (p *Parser) dispatchStartElement(s *SVG, tagname string, tok *xml.StartElem
 	case SVG_ELLIPSE_ELEMENT:
 	case SVG_GROUP_ELEMENT:
 	case SVG_IMAGE_ELEMENT:
+		i := NewImage()
+		i.ParseAttributes(tok)
+		s.AddElement(i)
 	case SVG_LINE_ELEMENT:
 	case SVG_PATH_ELEMENT:
 	case SVG_POLYGON_ELEMENT:
