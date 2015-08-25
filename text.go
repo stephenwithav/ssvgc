@@ -77,8 +77,10 @@ func (t *Text) Draw() image.Image {
 	}
 
 	t.textContext = t.chunks[0].textContext
-	glyphOffset := height - int(maxFont)
-	bounds := image.Rect(t.xOffset, t.yOffset-int(maxFont), t.xOffset+int(width>>6), t.yOffset+glyphOffset)
+	imgWidth := int(width >> 6)
+	t.setDimensions(imgWidth, height)
+
+	bounds := image.Rect(0, -int(maxFont), imgWidth, height-int(maxFont))
 
 	img := image.NewRGBA(bounds)
 	draw.Draw(img, bounds, image.Transparent, image.ZP, draw.Src)
@@ -87,7 +89,7 @@ func (t *Text) Draw() image.Image {
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
 
-	pt := freetype.Pt(bounds.Min.X, bounds.Min.Y+int(t.fontSize))
+	pt := freetype.Pt(0, 0)
 	t.font = t.loadFont(t.ttfFont)
 	for _, chunk := range t.chunks {
 		ctx.SetFont(t.font)
