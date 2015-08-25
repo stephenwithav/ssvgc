@@ -22,16 +22,20 @@ func NewRectangle() *Rectangle {
 	return r
 }
 
-func (r *Rectangle) ParseAttributes(start *xml.StartElement) {
-	r.parseCommonAttributes(start)
+func (r *Rectangle) SetAttribute(name, value string) {
+	switch name {
+	case "rx":
+		r.rX = parseFloatUnit(value)
+	case "ry":
+		r.rY = parseFloatUnit(value)
+	default:
+		r.commonElement.SetAttribute(name, value)
+	}
+}
 
+func (r *Rectangle) ParseAttributes(start *xml.StartElement) {
 	for _, attr := range start.Attr {
-		switch attr.Name.Local {
-		case "rx":
-			r.rX = parseFloatUnit(attr.Value)
-		case "ry":
-			r.rY = parseFloatUnit(attr.Value)
-		}
+		r.SetAttribute(attr.Name.Local, attr.Value)
 	}
 }
 
