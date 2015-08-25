@@ -3,7 +3,6 @@ package ssvgc
 import (
 	"encoding/xml"
 	"image"
-	"strconv"
 	"strings"
 
 	"github.com/disintegration/imaging"
@@ -74,8 +73,8 @@ func (i *Image) Draw() image.Image {
 	if i.width|i.height != 0 {
 		m = imaging.Resize(m, i.width, i.height, i.filter)
 	}
-	i.SetAttribute("width", strconv.Itoa(i.width))
-	i.SetAttribute("height", strconv.Itoa(i.height))
+	size := m.Bounds().Size()
+	i.setDimensions(size.X, size.Y)
 
 	return m
 }
