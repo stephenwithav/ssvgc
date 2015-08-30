@@ -37,6 +37,24 @@ func TestTextRendering(t *testing.T) {
 </text>
 </svg>`,
 		},
+		{
+			"name": "textbananaanchormiddle",
+			"text-value": `<svg width="500" height="200" fill="white">
+<text ttf-font="/tmp/DejaVuSans.ttf" font-size="18" x="250" y="70" text-anchor="middle">You are
+    <tspan>not</tspan>
+    a banana
+</text>
+</svg>`,
+		},
+		{
+			"name": "textbananaanchorend",
+			"text-value": `<svg width="500" height="200" fill="white">
+<text ttf-font="/tmp/DejaVuSans.ttf" font-size="18" x="250" y="70" text-anchor="end">You are
+    <tspan>not</tspan>
+    a banana
+</text>
+</svg>`,
+		},
 	}
 
 	for _, tt := range tests {
