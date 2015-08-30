@@ -24,6 +24,7 @@ func NewText() *Text {
 	t.fillColor = image.Black
 	t.strokeColor = image.Transparent
 	t.fontSize = 12
+	t.textAnchor = "start"
 
 	return t
 }
@@ -35,6 +36,11 @@ func (t *Text) SetAttribute(name, value string) {
 	case "ttf-font":
 		t.ttfFont = value
 		t.font = nil
+	case "text-anchor":
+		switch value {
+		case "middle", "end":
+			t.textAnchor = value
+		}
 	default:
 		t.commonElement.SetAttribute(name, value)
 	}
@@ -80,7 +86,16 @@ func (t *Text) Draw() image.Image {
 	imgWidth := int(width >> 6)
 	t.setDimensions(imgWidth, height)
 
-	bounds := image.Rect(0, -int(maxFont), imgWidth, height-int(maxFont))
+	startX := 0
+	switch t.textAnchor {
+	case "middle":
+		startX -= imgWidth >> 1
+	case "end":
+		startX -= imgWidth
+	}
+
+	bounds := image.Rect(startX, -int(maxFont), imgWidth, height-int(maxFont))
+	log.Println(t.Bounds(), imgWidth, startX, bounds)
 
 	img := image.NewRGBA(bounds)
 	draw.Draw(img, bounds, image.Transparent, image.ZP, draw.Src)
@@ -89,7 +104,7 @@ func (t *Text) Draw() image.Image {
 	ctx.SetDst(img)
 	ctx.SetClip(bounds)
 
-	pt := freetype.Pt(0, 0)
+	pt := freetype.Pt(startX, 0)
 	t.font = t.loadFont(t.ttfFont)
 	for _, chunk := range t.chunks {
 		ctx.SetFont(t.font)
@@ -163,8 +178,9 @@ func (t *Text) getMaxHeight() int {
 type textContext struct {
 	commonElement
 
-	fontSize float64
-	ttfFont  string
+	fontSize   float64
+	ttfFont    string
+	textAnchor string
 
 	font *truetype.Font
 }
